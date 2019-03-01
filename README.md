@@ -11,4 +11,10 @@ pip install -e .
 ```
 
 # Usage
-todo
+Twittermoto can be imported into any python script in your environment. An example Python script could be:
+
+```
+import twittermoto as tm
+
+tm.run()
+```

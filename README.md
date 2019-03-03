@@ -1,5 +1,5 @@
 # Twittermoto
-Python code for collecting and analysing tweets, and detecting earthquakes
+Python code for collecting and analysing tweets, and detecting earthquakes.
 
 
 # Installation

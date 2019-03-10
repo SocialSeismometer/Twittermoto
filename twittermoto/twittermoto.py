@@ -49,38 +49,3 @@ def run():
 
         if time.time()-startTime < 15:
             time.sleep(15 - (time.time()-startTime))
-
-
-
-class StreamListener(tweepy.StreamListener):
-
-    def on_connect(self):
-        """Called once connected to streaming server.
-        This will be invoked once a successful response
-        is received from the server. Allows the listener
-        to perform some work prior to entering the read loop.
-        """
-        print('Streamer connected...')
-        status_json = self.api.rate_limit_status()
-        limit = status_json['resources']['application']['/application/rate_limit_status']['limit']
-        remain = status_json['resources']['application']['/application/rate_limit_status']['remaining']
-        print(f'Resources: {remain}/{limit}')
-
-
-
-    def on_status(self, status):
-        '''EDIT THIS FUNCTION TO DO SOMETHING WHEN YOU RECIEVE A TWEET!!!'''
-        """Called when a new status arrives"""
-        #print(status)
-        out = f'''@{status.user.screen_name}\n {status.text} \n \
-geo data: {status.geo}\n time: {status.created_at}\n'''
-        print(out)
-        #print(status)
-        print()
-
-
-
-    def on_error(self, status_code):
-        """Called when a non-200 status code is returned"""
-        if status_code == 420:
-            return False

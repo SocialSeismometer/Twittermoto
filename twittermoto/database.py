@@ -16,6 +16,8 @@ class database(object):
     # def connect(self):
     #     pass
 
+
+
     def close(self):
         pass
 
@@ -40,8 +42,11 @@ class SQLite(database):
         self.conn = sqlite3.connect(filename)
         self.conn.execute(sql_create_table)
 
+
+
     def __len__(self):
-        pass
+        out = self.query('SELECT COUNT(*) FROM tweets')
+        return next(out)[0]
 
 
     def close(self):
@@ -56,3 +61,13 @@ class SQLite(database):
         self.conn.execute(sql_insert, data)
         self.conn.commit()
         return True
+
+
+
+    def query(self, the_query):
+        cur = self.conn.cursor()
+        cur.execute(the_query)
+        rows = cur.fetchall()
+
+        for row in rows:
+            yield row

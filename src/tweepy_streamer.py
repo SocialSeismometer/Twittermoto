@@ -31,7 +31,7 @@ class StreamListener(tweepy.StreamListener):
             return run
 
         # print tweet
-        self.print_status(status)
+        print_status(status)
 
         # add tweet to database (tweets.db)
         if self.db.add(status):
@@ -67,17 +67,17 @@ def prefilter(status):
     # Ignore users on BLACKLIST
     if screen_name in BLACKLIST:
         return False
-        # Ignore retweets.
-        if text.startswith('RT'):
-            return False
-            # ensure at least one keyword is in tweet text.
-        elif not any(kw in text for kw in KEYWORDS):
-            return False
-            # Ignore tweets with web links (http) and replies (@).
-        elif any(kw in text for kw in ['http', '@']):
-            return False
-        else:
-            return True
+    # Ignore retweets.
+    if text.startswith('RT'):
+        return False
+        # ensure at least one keyword is in tweet text.
+    elif not any(kw in text for kw in KEYWORDS):
+        return False
+        # Ignore tweets with web links (http) and replies (@).
+    elif any(kw in text for kw in ['http', '@']):
+        return False
+    else:
+        return True
 
 
 def print_status(status):

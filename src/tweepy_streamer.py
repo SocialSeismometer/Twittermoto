@@ -20,7 +20,7 @@ class StreamListener(tweepy.StreamListener):
         status_json = self.api.rate_limit_status()
         limit = status_json['resources']['application']['/application/rate_limit_status']['limit']
         remain = status_json['resources']['application']['/application/rate_limit_status']['remaining']
-        print(f'Resources: {remain}/{limit}')
+        print('Resources: {}/{}'.format(remain, limit))
 
 
 
@@ -35,7 +35,7 @@ class StreamListener(tweepy.StreamListener):
 
         # add tweet to database (tweets.db)
         if self.db.add(status):
-            print(f'tweet {status.id} saved to database.\n')
+            print('tweet {} saved to database.\n'.format(status.id))
 
         return run
 
@@ -43,7 +43,7 @@ class StreamListener(tweepy.StreamListener):
 
     def on_error(self, status_code):
         """Called when a status code is returned"""
-        print(f'An error occured in the Tweepy Twitter Streamer: {status_code}')
+        print('An error occured in the Tweepy Twitter Streamer: {}'.format(status_code))
         return False
 
 
@@ -82,8 +82,10 @@ def prefilter(status):
 
 def print_status(status):
     ''' Prints a twitter status to the console'''
-    out = f'''@{status.user.screen_name}\n {status.text} \n \
-    geo data: {status.geo}\n Author location: {status.author.location}\n time: {status.created_at}'''
+    out = '''@{}\n {} \n \
+    geo data: {}\n Author location: {}\n time: {}'''.format(
+    status.user.screen_name, status.text, status.geo,
+    status.author.location, status.created_at)
     print(out)
 
 

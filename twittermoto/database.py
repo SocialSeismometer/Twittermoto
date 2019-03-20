@@ -62,6 +62,33 @@ class SQLite(database):
         self.conn.commit()
         return True
 
+    def update(self, id, **kwargs):
+        """updates fields in a single row of the tweets database. Fields to update
+        and their corresponding value are passed as dictionary key-value pairs.
+
+        Args:
+            id       (int): Identification number of the tweet.
+            kwargs    (dict): the keys are the field to update, and the values
+                              are the value to update that field.
+
+
+        Returns:
+            bool: True for success, False otherwise.
+        """
+        to_set = ', '.join('{} = ?'.format(k) for k, v in kwargs.items())
+        values = [x for x in kwargs.values()] + [id]
+        sql = ''' UPDATE tweets
+                         SET {}
+                         WHERE id = ?'''.format(to_set)
+
+        try:
+            self.conn.execute(sql, values)
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
 
 
     def query(self, the_query):

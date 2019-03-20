@@ -45,7 +45,8 @@ def run():
         LMA = sum(hist)/60
         SMA = sum(hist[0:4])
 
-        print(f'{count} tweets about earthquakes, {geo_count} with geotags. Ratio = {round(SMA/LMA,2)}')
+        print('{} tweets about earthquakes, {} with geotags. Ratio = {}'.format(
+        count, geo_count, round(SMA/LMA,2)))
 
         if time.time()-startTime < 15:
             time.sleep(15 - (time.time()-startTime))

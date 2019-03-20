@@ -20,7 +20,7 @@ class StreamListener(tweepy.StreamListener):
         status_json = self.api.rate_limit_status()
         limit = status_json['resources']['application']['/application/rate_limit_status']['limit']
         remain = status_json['resources']['application']['/application/rate_limit_status']['remaining']
-        print(f'Resources: {remain}/{limit}')
+        print('Resources: {}/{}'.format(remain, limit))
 
 
 
@@ -31,11 +31,11 @@ class StreamListener(tweepy.StreamListener):
             return run
 
         # print tweet
-        self.print_status(status)
+        print_status(status)
 
         # add tweet to database (tweets.db)
         if self.db.add(status):
-            print(f'tweet {status.id} saved to database.\n')
+            print('tweet {} saved to database.\n'.format(status.id))
 
         return run
 
@@ -43,7 +43,7 @@ class StreamListener(tweepy.StreamListener):
 
     def on_error(self, status_code):
         """Called when a status code is returned"""
-        print(f'An error occured in the Tweepy Twitter Streamer: {status_code}')
+        print('An error occured in the Tweepy Twitter Streamer: {}'.format(status_code))
         return False
 
 
@@ -67,23 +67,25 @@ def prefilter(status):
     # Ignore users on BLACKLIST
     if screen_name in BLACKLIST:
         return False
-        # Ignore retweets.
-        if text.startswith('RT'):
-            return False
-            # ensure at least one keyword is in tweet text.
-        elif not any(kw in text for kw in KEYWORDS):
-            return False
-            # Ignore tweets with web links (http) and replies (@).
-        elif any(kw in text for kw in ['http', '@']):
-            return False
-        else:
-            return True
+    # Ignore retweets.
+    if text.startswith('RT'):
+        return False
+        # ensure at least one keyword is in tweet text.
+    elif not any(kw in text for kw in KEYWORDS):
+        return False
+        # Ignore tweets with web links (http) and replies (@).
+    elif any(kw in text for kw in ['http', '@']):
+        return False
+    else:
+        return True
 
 
 def print_status(status):
     ''' Prints a twitter status to the console'''
-    out = f'''@{status.user.screen_name}\n {status.text} \n \
-    geo data: {status.geo}\n Author location: {status.author.location}\n time: {status.created_at}'''
+    out = '''@{}\n {} \n \
+    geo data: {}\n Author location: {}\n time: {}'''.format(
+    status.user.screen_name, status.text, status.geo,
+    status.author.location, status.created_at)
     print(out)
 
 

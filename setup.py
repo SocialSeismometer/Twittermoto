@@ -9,8 +9,7 @@ setup(name                 = 'Twittermoto',
       author_email         = 'jaimeliew1@gmail.com',
       license              = 'MIT',
       packages             = ['twittermoto'],
-      install_requires     = ['pandas', 'numpy', 'importlib', 'click', 'tweepy'
-                              'matplotlib'],
+      install_requires     = ['pandas', 'numpy', 'importlib', 'click', 'tweepy', 'matplotlib'],
       zip_safe             = False,
       include_package_date = True,
       #entry_points         = {

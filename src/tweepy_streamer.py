@@ -3,7 +3,8 @@ import tweepy
 import sqlite3
 from twittermoto import config, database
 
-KEYWORDS = ['earthquake', 'terremoto', 'tembor', '地震', 'gempa bumi','lindol' , 'Lumilindol', 'lindu']
+KEYWORDS = ['earthquake', 'terremoto', 'temblor', '地震', 'jishin', 'gempa bumi', 
+            'lindol', 'Lumilindol', 'lindu', 'zemljotres', 'sismo', 'زلزال', 'زلزلہ']
 BLACKLIST = ['@Jasmine_Eq00', '@Rewrite_2011', '@RedneckBot']
 
 run = True

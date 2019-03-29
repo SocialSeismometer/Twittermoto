@@ -11,12 +11,11 @@ pip install -e .
 ```
 
 # Usage
-First you must enter your Twitter Developer keys and tokens in [twittermoto/config.py](https://github.com/twittermoto/Twittermoto/blob/master/twittermoto/config.py) before you can use the data collection scripts.
-
-Twittermoto can be imported into any python script in your environment. An example Python script could be:
-
+First you must provide your Twitter Developer keys. Create a file in the twittermoto folder called `config.py`. The content of `config.py` should be:
 ```
-import twittermoto as tm
-
-tm.run()
+consumer_key        = '*****'
+consumer_secret     = '*****'
+access_token        = '*****'
+access_token_secret = '*****'
 ```
+where the strings of *** shall be replaced with your TWitter Developer keys and tokens.

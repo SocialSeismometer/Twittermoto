@@ -1,21 +1,55 @@
-import os
 from twittermoto import database
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-def STA_LTA_Detection(db, dt = 5):   # short term average and long term average detection algorithm
-    the_query = f'SELECT STRFTIME(\'%s\',created_at)/{dt} as time_column, COUNT(*) \
-    FROM tweets GROUP BY time_column'
+
+class DetectionAlgorithm(object):
     
-    normConstant = 60/dt # constant for normalization to tweets per minute
-    setSTA = 60          # setting short term average in seconds
-    setLTA = 3600        # setting long term average in seconds
-    mConstant = 19        # Constant for characteristic function, it defines the increased STA necessary to trigger at a larger LTA
-    bConstant = 9       # Constant for characteristic function, it defines the STA value that will cause an event trigger when the LTA is zero
+    def __init__(self, m, b, dt=5):
+        self.T_STA = 60     # timescale of short term average [s]
+        self.T_LTA = 3600   # timescale of long term average [s]
+        self.m     = m      # sensitivity constant [?]
+        self.b     = b      # sensitivity constant [tweets/min]
+        self.dt    = dt     # sampling period [s]
+        
+        self.X = np.zeros(self.T_STA//dt) # tweet-per-minute history of STA
+        self.Y = np.zeros(self.T_LTA//dt) # tweet-per-minute history of LTA
+        
+    def __call__(self, x):
+        self.update(x)
+        return self.output()
+        
+        
+    def update(self, x):
+        '''
+        Updates the tweet-per-minute history given the number of tweets for the last dt seconds.
+        '''
+        self.X = np.roll(self.X, 1)
+        self.Y = np.roll(self.Y, 1)
+        
+        self.X[0] = x*60/self.dt
+        self.Y[0] = x*60/self.dt
+        
+        
+    def output(self):
+        '''
+        Returns the characteristic function of the detection algorithm.
+        Values greater than 1 indicate a detection.
+        '''
+        return self.X.mean()/(self.m*self.Y.mean() + self.b)
+
+        
     
+
+
+def get_tweet_frequency(db, dt=5):
     # Data Conditioning to fill in missing time indices with zero tweets
+    
+    the_query = f'SELECT STRFTIME(\'%s\',created_at)/{dt} as time_column, COUNT(*) \
+    FROM tweets GROUP BY time_column'    
+         
     X, Y = [], [] 
     oldValue , diffValue = [] , []
     for i, newValue in enumerate(db.query(the_query)):
@@ -35,66 +69,47 @@ def STA_LTA_Detection(db, dt = 5):   # short term average and long term average 
                 X.append(datetime.fromtimestamp(newValue[0]*dt))
                 Y.append(newValue[1])                             
         oldValue = newValue
-    Y = [y_tmp*normConstant for y_tmp in Y]   # normalizing Y list into tweets per minute 
-
-    # Computing short term and long term averages
-    X_STA , Y_STA = [] , []    
-    X_LTA , Y_LTA = [] , []    
-    for k in range(len(X)):
-        if k >= int(setLTA/dt-1):
-            X_STA.append( X[k] )
-            Y_STA.append( sum(Y[(k-int(setSTA/dt)-1):k])/(setSTA/dt) )
-            X_LTA.append( X[k] )
-            Y_LTA.append( sum(Y[(k-int(setLTA/dt)-1):k])/(setLTA/dt) )
     
-    # Computing characteristic function 
-    X_CF , Y_CF = [] , []
-    threshold_CF = []
-    for l in range(len(X_STA)):
-        X_CF.append( X_STA[l] )
-        Y_CF.append( Y_STA[l]/(mConstant*Y_LTA[l] + bConstant) )
-        threshold_CF.append(1)
-        
-    # Plotting "TweetGram"
-    plt.figure()
-    plt.plot(X, Y)     
-    # prettify date on x-axis
-    plt.gcf().autofmt_xdate()
-    myFmt = mdates.DateFormatter('%d-%b %H:%M')
-    plt.gca().xaxis.set_major_formatter(myFmt)
-    plt.ylabel(f'Earthquake tweet rate [tweets/min]')
-    plt.ylim(0, max(Y))
+    return X, Y
+    
+    
+    
+def run(db):
+    time, tweet_freq = get_tweet_frequency(db)
+    
+    
+    DAs = [DetectionAlgorithm(2, 5),
+           DetectionAlgorithm(4, 10),
+           DetectionAlgorithm(19, 9)]   
+    DA_labels = ['sensative', 'moderate', 'conservative']
+           
+    C_t = x = [[] for i in range(len(DAs))]
+    
+    # loop through tweet frequency data to simulate realtime measurements
+    for tf in tweet_freq:
+        # update each detection algorithm with current tweet frequency
+        for i, DA in enumerate(DAs):
+            C_t[i].append(DA(tf))
 
-    # Plotting STA and LTA
-    plt.figure()
-    plt.plot(X_STA, Y_STA,label = 'STA')
-    plt.plot(X_LTA, Y_LTA,label = 'LTA')     
-    # prettify date on x-axis
-    plt.gcf().autofmt_xdate()
+    # Plot
+    fig, axes = plt.subplots(2, 1, sharex=True)
+    axes[0].set_ylabel('Tweets per 5 second period')
+    axes[1].set_ylabel('Characteristic function')
+    axes[0].plot(time, tweet_freq)
+    for i, ct in enumerate(C_t):
+        axes[1].plot(time, ct, label=DA_labels[i])  
+    axes[1].axhline(1, ls='--', lw=1, c='k') 
+    axes[1].set_ylim(0, 2)
+    axes[1].legend()
+    fig.autofmt_xdate()
     myFmt = mdates.DateFormatter('%d-%b %H:%M')
-    plt.gca().xaxis.set_major_formatter(myFmt)
-    plt.ylabel(f'Earthquake tweet rate [tweets/min]')
-    plt.ylim(0, max(Y_STA))  
-    plt.legend(loc='upper left')
-  
-    # Plotting Characteristic Function
-    plt.figure()
-    plt.plot(X_CF, Y_CF)
-    plt.plot(X_CF, threshold_CF ,'--' , label='detection threshold')     
-    # prettify date on x-axis
-    plt.gcf().autofmt_xdate()
-    myFmt = mdates.DateFormatter('%d-%b %H:%M')
-    plt.gca().xaxis.set_major_formatter(myFmt)
-    plt.ylabel(f'Characteristic Function [-]')
-    plt.ylim(0, max(Y_CF))      
-    plt.legend(loc='upper left')
-            
+    axes[1].xaxis.set_major_formatter(myFmt)
+    
+    plt.show()
+    
+    
+    
 if __name__ == '__main__':
 
-    # Create target Directory if don't exist
-    if not os.path.exists('fig'):
-        os.mkdir('fig')
-
     db = database.SQLite('tweets.db')
-
-    STA_LTA_Detection(db)
+    run(db)

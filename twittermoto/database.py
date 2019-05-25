@@ -52,12 +52,10 @@ class SQLite(database):
     def close(self):
         self.conn.close()
 
-    def add(self, status):
+    def add(self, id, screen_name, text, created_at, location):
         sql_insert = '''INSERT OR REPLACE INTO tweets(id, screen_name, text, created_at, location, text_trans, lat, long)
                         VALUES(?, ?, ?, ?, ?, ?, ?, ?)'''
-        data = [status.id, '@' + status.user.screen_name, status.text,
-                status.created_at, status.author.location,
-                None, None, None]
+        data = [id, '@' + screen_name, text, created_at, location, None, None, None]
         self.conn.execute(sql_insert, data)
         self.conn.commit()
         return True

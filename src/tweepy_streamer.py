@@ -35,7 +35,9 @@ class StreamListener(tweepy.StreamListener):
         print_status(status)
 
         # add tweet to database (tweets.db)
-        if self.db.add(status):
+        add_status = self.db.add(status.id, status.user.screen_name, status.text,
+                       status.created_at, status.author.location)
+        if add_status:
             print('tweet {} saved to database.\n'.format(status.id))
 
         return run

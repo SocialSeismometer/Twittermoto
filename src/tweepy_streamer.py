@@ -2,10 +2,7 @@ import signal
 import tweepy
 import sqlite3
 from twittermoto import config, database
-
-KEYWORDS = ['earthquake', 'terremoto', 'temblor', '地震', 'jishin', 'gempa bumi', 
-            'lindol', 'Lumilindol', 'lindu', 'zemljotres', 'sismo', 'زلزال', 'زلزلہ']
-BLACKLIST = ['@Jasmine_Eq00', '@Rewrite_2011', '@RedneckBot']
+from twittermoto import settings
 
 run = True
 class StreamListener(tweepy.StreamListener):
@@ -68,13 +65,13 @@ def prefilter(status):
     text        = status.text
     screen_name = '@' + status.user.screen_name
     # Ignore users on BLACKLIST
-    if screen_name in BLACKLIST:
+    if screen_name in settings.BLACKLIST:
         return False
     # Ignore retweets.
     if text.startswith('RT'):
         return False
         # ensure at least one keyword is in tweet text.
-    elif not any(kw in text for kw in KEYWORDS):
+    elif not any(kw in text for kw in settings.KEYWORDS):
         return False
         # Ignore tweets with web links (http) and replies (@).
     elif any(kw in text for kw in ['http', '@']):
@@ -110,5 +107,5 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, interrupt_handler)
 
     # Begin streaming
-    stream.filter(track=KEYWORDS)
+    stream.filter(track=settings.KEYWORDS)
     print('Exited.')

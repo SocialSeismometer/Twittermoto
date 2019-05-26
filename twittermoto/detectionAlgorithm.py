@@ -77,7 +77,7 @@ def get_tweet_frequency(db, dt=5):
 
 
 def run(db):
-    time, tweet_freq = get_tweet_frequency(db)
+    time, tweet_freq = db.binned_count(dt=5)
 
 
     DAs = [DetectionAlgorithm(2, 5),

@@ -11,14 +11,15 @@ from dateutil import parser
 def plot_detector_vs_time(db_filename, dt=5):
     # Query data from tweet database.
     db = database.SQLite(db_filename)
-    time, tweet_freq = detectionAlgorithm.get_tweet_frequency(db, dt=dt)
+    time, tweet_freq = db.binned_count(dt=dt)
+    db.close()
 
     DAs = [detectionAlgorithm.DetectionAlgorithm(2, 5, dt=dt),
            detectionAlgorithm.DetectionAlgorithm(4, 10, dt=dt),
            detectionAlgorithm.DetectionAlgorithm(19, 9, dt=dt)]
     DA_labels = ['sensative', 'moderate', 'conservative']
 
-    C_t = x = [[] for i in range(len(DAs))]
+    C_t  = [[] for i in range(len(DAs))]
 
     # loop through tweet frequency data to simulate realtime measurements
     for tf in tweet_freq:
@@ -66,15 +67,8 @@ def plot_detector_vs_time(db_filename, dt=5):
 
 
 def plot_tweetcount_vs_time(db_filename, dt=600):
-    the_query = 'SELECT STRFTIME(\'%s\', created_at)/{} as minute, COUNT(*) \
-    FROM tweets GROUP BY minute'.format(dt)
-
-    # Query data from database.
     db = database.SQLite(db_filename)
-    X, Y = [], []
-    for i, row in enumerate(db.query(the_query)):
-        X.append(datetime.utcfromtimestamp(row[0]*dt))
-        Y.append(row[1])
+    time, tweet_freq = db.binned_count(dt=dt)
     db.close()
 
     # Query USGS for historical seismic data
@@ -87,21 +81,21 @@ def plot_tweetcount_vs_time(db_filename, dt=600):
     # Plot data
     fig = plt.figure()
 
-    plt.plot(X, Y, 'k', lw=1.5)
+    plt.plot(time, tweet_freq, 'k', lw=1.5)
     for i, row in df.iterrows():
-        time = parser.parse(row.time)
+        time_ref = parser.parse(row.time)
         if row.mag>5:
-            plt.axvline(time, lw=1, ls='--', c='r')
+            plt.axvline(time_ref, lw=1, ls='--', c='r')
         elif row.mag>4:
-            plt.axvline(time, lw=0.5, ls='--', c='0.3')
+            plt.axvline(time_ref, lw=0.5, ls='--', c='0.3')
 
     # prettify date on x-axis
     plt.gcf().autofmt_xdate()
     myFmt = mdates.DateFormatter('%d-%b %H:%M')
     plt.gca().xaxis.set_major_formatter(myFmt)
 
-    plt.ylabel('Earthquake tweet rate [tweets/10 min]')
-    plt.xlim(min(X), max(X))
-    plt.ylim(0, max(Y))
+    plt.ylabel('Earthquake\ntweets per minute')
+    plt.xlim(min(time), max(time))
+    plt.ylim(0, max(tweet_freq))
 
     return fig

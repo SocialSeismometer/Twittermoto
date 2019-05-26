@@ -36,6 +36,13 @@ def plot_detector_vs_time(db_filename, dt=5):
     # Plot
     fig, axes = plt.subplots(2, 1, sharex=True)
 
+
+    axes[0].set_ylabel('Tweets per 5 second period')
+    axes[1].set_ylabel('Characteristic function')
+    axes[0].plot(time, tweet_freq)
+    for i, ct in enumerate(C_t):
+        axes[1].plot(time, ct, label=DA_labels[i])
+
     # plot reference data
     for i, row in df.iterrows():
         time_ref = parser.parse(row.time)
@@ -45,12 +52,6 @@ def plot_detector_vs_time(db_filename, dt=5):
         elif row.mag>4:
             axes[0].axvline(time_ref, lw=0.5, ls='--', c='0.3')
             axes[1].axvline(time_ref, lw=0.5, ls='--', c='0.3')
-
-    axes[0].set_ylabel('Tweets per 5 second period')
-    axes[1].set_ylabel('Characteristic function')
-    axes[0].plot(time, tweet_freq)
-    for i, ct in enumerate(C_t):
-        axes[1].plot(time, ct, label=DA_labels[i])
     axes[1].axhline(1, ls='--', lw=1, c='k')
     axes[1].set_ylim(0, 2)
     axes[1].set_xlim(min(time), max(time))

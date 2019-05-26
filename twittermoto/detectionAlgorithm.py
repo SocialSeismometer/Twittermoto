@@ -17,8 +17,18 @@ class DetectionAlgorithm(object):
         self.X = np.zeros(self.T_STA//dt) # tweet-per-minute history of STA
         self.Y = np.zeros(self.T_LTA//dt) # tweet-per-minute history of LTA
 
-    def __call__(self, x):
+        self.detections         = []
+        self.earthquakeDetected = False
+
+    def __call__(self, t, x):
         self.update(x)
+        if self.output() >= 1 and not self.earthquakeDetected:
+            self.detections.append([t, -1])
+            self.earthquakeDetected = True
+        elif self.output() < 1 and self.earthquakeDetected:
+            self.detections[-1][1] = t
+            self.earthquakeDetected = False
+
         return self.output()
 
 
@@ -40,39 +50,6 @@ class DetectionAlgorithm(object):
         '''
         return self.X.mean()/(self.m*self.Y.mean() + self.b)
 
-
-
-
-
-
-
-def get_tweet_frequency(db, dt=5):
-    # Data Conditioning to fill in missing time indices with zero tweets
-
-    the_query = f'SELECT STRFTIME(\'%s\',created_at)/{dt} as time_column, COUNT(*) \
-    FROM tweets GROUP BY time_column'
-
-    X, Y = [], []
-    oldValue , diffValue = [] , []
-    for i, newValue in enumerate(db.query(the_query)):
-        if i == 0:
-            X.append(datetime.utcfromtimestamp(newValue[0]*dt))
-            Y.append(newValue[1]*60/dt)
-        else:
-            diffValue = newValue[0] - oldValue[0]
-            if diffValue > 1:
-                for j in range(diffValue):
-                    X.append(datetime.utcfromtimestamp((oldValue[0] + j + 1)*dt))
-                    if j == diffValue-1:
-                        Y.append(newValue[1])
-                    else:
-                        Y.append(0)
-            else:
-                X.append(datetime.utcfromtimestamp(newValue[0]*dt))
-                Y.append(newValue[1]*60/dt)
-        oldValue = newValue
-
-    return X, Y
 
 
 

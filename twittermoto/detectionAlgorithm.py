@@ -44,6 +44,8 @@ class DetectionAlgorithm(object):
 
 
 
+
+
 def get_tweet_frequency(db, dt=5):
     # Data Conditioning to fill in missing time indices with zero tweets
 
@@ -54,20 +56,20 @@ def get_tweet_frequency(db, dt=5):
     oldValue , diffValue = [] , []
     for i, newValue in enumerate(db.query(the_query)):
         if i == 0:
-            X.append(datetime.fromtimestamp(newValue[0]*dt))
-            Y.append(newValue[1])
+            X.append(datetime.utcfromtimestamp(newValue[0]*dt))
+            Y.append(newValue[1]*60/dt)
         else:
             diffValue = newValue[0] - oldValue[0]
             if diffValue > 1:
                 for j in range(diffValue):
-                    X.append(datetime.fromtimestamp((oldValue[0] + j + 1)*dt))
+                    X.append(datetime.utcfromtimestamp((oldValue[0] + j + 1)*dt))
                     if j == diffValue-1:
                         Y.append(newValue[1])
                     else:
                         Y.append(0)
             else:
-                X.append(datetime.fromtimestamp(newValue[0]*dt))
-                Y.append(newValue[1])
+                X.append(datetime.utcfromtimestamp(newValue[0]*dt))
+                Y.append(newValue[1]*60/dt)
         oldValue = newValue
 
     return X, Y

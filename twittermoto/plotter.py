@@ -37,8 +37,8 @@ def plot_detector_vs_time(db_filename, dt=5):
     fig, axes = plt.subplots(2, 1, sharex=True)
 
 
-    axes[0].set_ylabel('Tweets per 5 second period')
-    axes[1].set_ylabel('Characteristic function')
+    axes[0].set_ylabel('Earthquake\ntweets per minute')
+    axes[1].set_ylabel('Detection\nfunction')
     axes[0].plot(time, tweet_freq)
     for i, ct in enumerate(C_t):
         axes[1].plot(time, ct, label=DA_labels[i])

@@ -63,7 +63,7 @@ def list_detections(data):
         if len(nearby_detections) > 0:
             detections[i][3] = True
 
-    confidence_choices = {1:'Low', 2:'Medium', 3:'High'}
+    confidence_choices = {1:'Low', 2:'Medium', 3:'High', 4:'High'}
     for i in range(len(detections)):
         detections[i][2] = confidence_choices[detections[i][2]]
 

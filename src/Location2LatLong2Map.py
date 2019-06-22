@@ -26,7 +26,7 @@ myGeoCoder.create_database()
 myGeoCoder.open_connection()
 
 # searching for lat long
-result = myGeoCoder.get_Lat_Long(['Amsterdam'])
+result = myGeoCoder.get_Lat_Long(['amsterdam'])
 
 # close connection
 myGeoCoder.close_connection()
@@ -59,8 +59,9 @@ m = Basemap(projection='cyl', resolution=None,
             llcrnrlat=-90, urcrnrlat=90,
             llcrnrlon=-180, urcrnrlon=180, )
 draw_map(m)
-# Map (long, lat) to (x, y) for plotting
-x, y = m(result[2],result[1])
-plt.plot(x, y, 'ok', markersize=5)
-plt.text(x, y, result[0], fontsize=12);
+if result:
+    # Map (long, lat) to (x, y) for plotting
+    x, y = m(result[2],result[1])
+    plt.plot(x, y, 'ok', markersize=5)
+    plt.text(x, y, result[0], fontsize=12);
 

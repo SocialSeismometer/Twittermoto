@@ -74,10 +74,14 @@ class GeoCoder():
     # METHOD TO READ LAT LONG FROM DATABASE
     def get_Lat_Long(self,findName):
         self.c.execute("SELECT name,latitude,longitude,population FROM cities500 WHERE name MATCH ? ORDER BY population" , findName)
-        for row in self.c.fetchall():
-            result = row
-            print(row)
-        return result # returns the last result from fetchall()    
+        try:
+            for row in self.c.fetchall():
+                result = row
+                print(row)
+            return result # returns the last result from fetchall()
+        except:
+            print('WARNING! No Location Found.')
+            result = []
     
     def close_connection(self):
         self.c.close()

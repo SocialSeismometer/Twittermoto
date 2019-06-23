@@ -13,27 +13,23 @@ import os
 os.environ["PROJ_LIB"] ="C:\\Users\\Arsalan\\Anaconda3\\pkgs\\proj4-5.2.0-ha925a31_1\\Library\\share"; #fixr
 from mpl_toolkits.basemap import Basemap
 from itertools import chain
-import time
 
+# INPUT
+dbfilename    = 'cities500'  # filename of database to be created/queried
+sourcefilename =  dbfilename     # filename of the text file containing data source
 # ---------------------------MAIN---------------------------------------------
 
 # instantiating GeoCoder class
-myGeoCoder = GeoCoder('cities500')
+myGeoCoder = GeoCoder(dbfilename,sourcefilename)
 
-start = time.time()
 # creating database
 myGeoCoder.create_database()
-end = time.time()
-print('DataBase created in {:.4f} seconds'.format(end - start))
 
 # Open Connection
 myGeoCoder.open_connection()
 
-start = time.time()
 # searching for lat long
-result = myGeoCoder.get_Lat_Long(['amsterdam'])
-end = time.time()
-print('Search time was {:.6f} seconds'.format(end - start))
+result = myGeoCoder.get_Lat_Long(['rawalpindi'])
 
 # close connection
 myGeoCoder.close_connection()

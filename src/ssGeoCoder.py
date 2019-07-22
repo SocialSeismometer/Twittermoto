@@ -12,6 +12,7 @@ Created on Sat Jun 22 13:53:57 2019
 import sqlite3
 import os.path
 import time
+from fuzzywuzzy import process
 
 class GeoCoder():
     
@@ -89,6 +90,16 @@ class GeoCoder():
         except:
             print('WARNING! No Location Found.')
             result = []
+            
+    def get_fuzzy_Lat_Long(self,findName):
+        start = time.time()
+        nameList = self.c.execute("SELECT name FROM cities500") # alternateNames can also be used instead of name here
+        Ratios = process.extract(findName,nameList)
+        foundName = Ratios[0][0][0]
+        result = self.get_Lat_Long([foundName])
+        end = time.time()
+        print('Search time was {:.6f} seconds'.format(end - start)) 
+        return result         
     
     def close_connection(self):
         self.c.close()

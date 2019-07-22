@@ -28,8 +28,11 @@ myGeoCoder.create_database()
 # Open Connection
 myGeoCoder.open_connection()
 
-# searching for lat long
-result = myGeoCoder.get_Lat_Long(['rawalpindi'])
+# searching for lat long (using SQLite3 FTS4). Extremely Fast
+#result = myGeoCoder.get_Lat_Long(['amsterdam'])
+# ----- OR -------
+# searching for lat long (using fuzzy wuzzy and SQLite3 FTS4). Very Slow.
+result = myGeoCoder.get_fuzzy_Lat_Long('amsterdam')
 
 # close connection
 myGeoCoder.close_connection()

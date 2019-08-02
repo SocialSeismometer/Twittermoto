@@ -32,7 +32,10 @@ myGeoCoder.open_connection()
 #result = myGeoCoder.get_Lat_Long(['amsterdam'])
 # ----- OR -------
 # searching for lat long (using fuzzy wuzzy and SQLite3 FTS4). Very Slow.
-result = myGeoCoder.get_fuzzy_Lat_Long('amsterdam')
+#result = myGeoCoder.get_fuzzy_Lat_Long('amsterdam')
+# ----- OR -------
+# searching for lat long using Nominatim.
+result = myGeoCoder.get_Lat_Long_Nominatim('amsterdam')
 
 # close connection
 myGeoCoder.close_connection()

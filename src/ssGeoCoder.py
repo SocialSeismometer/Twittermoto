@@ -13,6 +13,8 @@ import sqlite3
 import os.path
 import time
 from fuzzywuzzy import process
+from geopy import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
 
 class GeoCoder():
     
@@ -28,7 +30,9 @@ class GeoCoder():
         self.FILE = '/{}.txt'.format(self.sourcefilename)
         # path to txt file containing data
         self.file = '{}{}'.format(GeoCoder.DIR, self.FILE)
-        # connecting to database, if not created then creates new database
+        # creating instance of Nominatim
+        self.geolocator  = Nominatim(user_agent="my-application")
+        self.geocode = RateLimiter(self.geolocator.geocode, min_delay_seconds=1) 
         
 # ------------------------------- METHODS -------------------------------------
     
@@ -90,7 +94,8 @@ class GeoCoder():
         except:
             print('WARNING! No Location Found.')
             result = []
-            
+    
+    # METHOD TO READ LAT LONG FROM DATABASE USING FUZZY SEARCH        
     def get_fuzzy_Lat_Long(self,findName):
         start = time.time()
         nameList = self.c.execute("SELECT name FROM cities500") # alternateNames can also be used instead of name here
@@ -101,17 +106,31 @@ class GeoCoder():
         print('Search time was {:.6f} seconds'.format(end - start)) 
         return result         
     
+    # METHOD TO CONVERT LOCATION TO LAT LONG USING NOMINATIM
+    def get_Lat_Long_Nominatim(self,findName):
+        start = time.time()
+        geo = self.geocode(findName)
+        result = (findName,geo.latitude,geo.longitude,-1) # -1 implies there is no population data using Nominatim
+        end = time.time()
+        print('Search time was {:.6f} seconds'.format(end - start)) 
+        return result         
+    
+    # METHOD TO CONVERT LOCATION TO LAT LONG USING FTS4, FUZZY SEARCH, AND NOMINATIM
+    #def get_Lat_Long_Hybrid(self,findName):
+        
+        #return result         
+    
+    # METHOD TO CLOSE CONNECTION TO DATABASE
     def close_connection(self):
         self.c.close()
         self.conn.close()
         print('Connection to {}.db Closed!'.format(self.dbfilename))
-        
+    
+    # METHOD TO OPEN CONNECTION TO DATABASE    
     def open_connection(self):    
         self.conn = sqlite3.connect('{}.db'.format(self.dbfilename))
         self.c = self.conn.cursor()
         print('Connection to {}.db Opened!'.format(self.dbfilename))        
-        
-        
         
         
         

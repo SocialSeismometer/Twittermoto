@@ -83,7 +83,7 @@ class GeoCoder():
     # METHOD TO READ LAT LONG FROM DATABASE
     def get_Lat_Long(self,findName):
         start = time.time()
-        self.c.execute("SELECT name,latitude,longitude,population FROM cities500 WHERE name MATCH ? ORDER BY population" , findName)
+        self.c.execute("SELECT name,latitude,longitude,population FROM cities500 WHERE name MATCH ? ORDER BY population" , [findName])
         try:
             for row in self.c.fetchall():
                 result = row
@@ -101,7 +101,7 @@ class GeoCoder():
         nameList = self.c.execute("SELECT name FROM cities500") # alternateNames can also be used instead of name here
         Ratios = process.extract(findName,nameList)
         foundName = Ratios[0][0][0]
-        result = self.get_Lat_Long([foundName])
+        result = self.get_Lat_Long(foundName)
         end = time.time()
         print('Search time was {:.6f} seconds'.format(end - start)) 
         return result         
@@ -110,15 +110,24 @@ class GeoCoder():
     def get_Lat_Long_Nominatim(self,findName):
         start = time.time()
         geo = self.geocode(findName)
-        result = (findName,geo.latitude,geo.longitude,-1) # -1 implies there is no population data using Nominatim
+        if geo is None:
+            result = None
+        else:
+            result = (findName,geo.latitude,geo.longitude,-1) # -1 implies there is no population data using Nominatim
         end = time.time()
         print('Search time was {:.6f} seconds'.format(end - start)) 
         return result         
     
     # METHOD TO CONVERT LOCATION TO LAT LONG USING FTS4, FUZZY SEARCH, AND NOMINATIM
-    #def get_Lat_Long_Hybrid(self,findName):
-        
-        #return result         
+    def get_Lat_Long_Hybrid(self,findName):
+        result = self.get_Lat_Long(findName) 
+        if result is None:
+            print('Using Nominatim to find location...')
+            result = self.get_Lat_Long_Nominatim(findName)
+            if result is None:
+                print('Using Fuzzy Search to find location...')
+                result = self.get_fuzzy_Lat_Long(findName)                    
+        return result         
     
     # METHOD TO CLOSE CONNECTION TO DATABASE
     def close_connection(self):
@@ -131,6 +140,5 @@ class GeoCoder():
         self.conn = sqlite3.connect('{}.db'.format(self.dbfilename))
         self.c = self.conn.cursor()
         print('Connection to {}.db Opened!'.format(self.dbfilename))        
-        
-        
-        
+
+    

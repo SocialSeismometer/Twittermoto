@@ -1,4 +1,5 @@
-from twittermoto import Streamer, config
+from twittermoto config
+from twittermoto.streamer import Streamer
 
 
 auth = {
